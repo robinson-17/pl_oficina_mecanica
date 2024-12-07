@@ -1,0 +1,227 @@
+1. Criação do Esquema Lógico do Banco de Dados
+O script SQL abaixo cria o esquema para a "Oficina Mecânica":
+
+CREATE DATABASE OficinaMecanica;
+
+USE OficinaMecanica;
+
+-- Tabela Cliente
+CREATE TABLE Cliente (
+    idCliente INT PRIMARY KEY AUTO_INCREMENT,
+    Nome VARCHAR(45) NOT NULL,
+    Telefone VARCHAR(45),
+    Endereco VARCHAR(45)
+);
+
+-- Tabela Veículo
+CREATE TABLE Veiculo (
+    idVeiculo INT PRIMARY KEY AUTO_INCREMENT,
+    Placa VARCHAR(45) NOT NULL,
+    Modelo VARCHAR(45),
+    Ano VARCHAR(45),
+    Cliente_idCliente INT NOT NULL,
+    FOREIGN KEY (Cliente_idCliente) REFERENCES Cliente(idCliente)
+);
+
+-- Tabela OS (Ordem de Serviço)
+CREATE TABLE OS (
+    idOS INT PRIMARY KEY AUTO_INCREMENT,
+    DataEmissao DATE NOT NULL,
+    ValorTotal DECIMAL(10,2),
+    Status VARCHAR(45),
+    DataConclusao DATE,
+    Veiculo_idVeiculo INT NOT NULL,
+    FOREIGN KEY (Veiculo_idVeiculo) REFERENCES Veiculo(idVeiculo)
+);
+
+-- Tabela Serviço
+CREATE TABLE Servico (
+    idServico INT PRIMARY KEY AUTO_INCREMENT,
+    Descricao VARCHAR(45),
+    ValorMaoObra DECIMAL(10,2),
+    Status VARCHAR(45)
+);
+
+-- Tabela Peça
+CREATE TABLE Peca (
+    idPeca INT PRIMARY KEY AUTO_INCREMENT,
+    NomePeca VARCHAR(45),
+    ValorPeca DECIMAL(10,2)
+);
+
+-- Tabela Serviço_has_OS
+CREATE TABLE Servico_has_OS (
+    Servico_idServico INT NOT NULL,
+    OS_idOS INT NOT NULL,
+    OS_Veiculo_idVeiculo INT NOT NULL,
+    PRIMARY KEY (Servico_idServico, OS_idOS),
+    FOREIGN KEY (Servico_idServico) REFERENCES Servico(idServico),
+    FOREIGN KEY (OS_idOS) REFERENCES OS(idOS)
+);
+
+-- Tabela Peça_has_OS
+CREATE TABLE Peca_has_OS (
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    Peca_idPeca INT NOT NULL,
+    OS_idOS INT NOT NULL,
+    Quantidade INT NOT NULL,
+    ValorTotal DECIMAL(10,2),
+    FOREIGN KEY (Peca_idPeca) REFERENCES Peca(idPeca),
+    FOREIGN KEY (OS_idOS) REFERENCES OS(idOS)
+);
+
+-- Tabela Mecânico
+CREATE TABLE Mecanico (
+    idMecanico INT PRIMARY KEY AUTO_INCREMENT,
+    Nome VARCHAR(45),
+    Endereco VARCHAR(45),
+    Especialidade VARCHAR(45)
+);
+
+-- Tabela Equipe
+CREATE TABLE Equipe (
+    idEquipe INT PRIMARY KEY AUTO_INCREMENT,
+    NomeEquipe VARCHAR(45)
+);
+
+-- Tabela Equipe_has_Mecânico
+CREATE TABLE Equipe_has_Mecanico (
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    Equipe_idEquipe INT NOT NULL,
+    Mecanico_idMecanico INT NOT NULL,
+    FOREIGN KEY (Equipe_idEquipe) REFERENCES Equipe(idEquipe),
+    FOREIGN KEY (Mecanico_idMecanico) REFERENCES Mecanico(idMecanico)
+);
+
+-- Tabela Execução de Serviço
+CREATE TABLE ExecucaoServico (
+    Mecanico_idMecanico INT NOT NULL,
+    OS_idOS INT NOT NULL,
+    DataInicio DATE,
+    DataFim DATE,
+    PRIMARY KEY (Mecanico_idMecanico, OS_idOS),
+    FOREIGN KEY (Mecanico_idMecanico) REFERENCES Mecanico(idMecanico),
+    FOREIGN KEY (OS_idOS) REFERENCES OS(idOS)
+);
+
+
+2. Persistência de Dados para Testes (dados fictícios)
+Este script insere dados em cada tabela para teste:
+
+-- Inserindo dados em Cliente
+INSERT INTO Cliente (Nome, Telefone, Endereco) VALUES
+('João Silva', '123456789', 'Rua A'),
+('Maria Oliveira', '987654321', 'Rua B');
+
+-- Inserindo dados em Veículo
+INSERT INTO Veiculo (Placa, Modelo, Ano, Cliente_idCliente) VALUES
+('ABC-1234', 'Gol', '2015', 1),
+('DEF-5678', 'Civic', '2018', 2);
+
+-- Inserindo dados em OS
+INSERT INTO OS (DataEmissao, ValorTotal, Status, DataConclusao, Veiculo_idVeiculo) VALUES
+('2024-12-01', 500.00, 'Concluída', '2024-12-05', 1),
+('2024-12-02', 700.00, 'Em andamento', NULL, 2);
+
+-- Inserindo dados em Serviço
+INSERT INTO Servico (Descricao, ValorMaoObra, Status) VALUES
+('Troca de óleo', 100.00, 'Concluído'),
+('Alinhamento', 200.00, 'Pendente');
+
+-- Inserindo dados em Peça
+INSERT INTO Peca (NomePeca, ValorPeca) VALUES
+('Filtro de óleo', 50.00),
+('Correia dentada', 150.00);
+
+-- Inserindo dados em Serviço_has_OS
+INSERT INTO Servico_has_OS (Servico_idServico, OS_idOS, OS_Veiculo_idVeiculo) VALUES
+(1, 1, 1),
+(2, 2, 2);
+
+-- Inserindo dados em Peça_has_OS
+INSERT INTO Peca_has_OS (Peca_idPeca, OS_idOS, Quantidade, ValorTotal) VALUES
+(1, 1, 1, 50.00),
+(2, 2, 2, 300.00);
+
+-- Inserindo dados em Mecânico
+INSERT INTO Mecanico (Nome, Endereco, Especialidade) VALUES
+('Carlos', 'Rua C', 'Suspensão'),
+('Pedro', 'Rua D', 'Freios');
+
+-- Inserindo dados em Equipe
+INSERT INTO Equipe (NomeEquipe) VALUES
+('Equipe Alfa'),
+('Equipe Beta');
+
+-- Inserindo dados em Equipe_has_Mecânico
+INSERT INTO Equipe_has_Mecanico (Equipe_idEquipe, Mecanico_idMecanico) VALUES
+(1, 1),
+(2, 2);
+
+-- Inserindo dados em Execução de Serviço
+INSERT INTO ExecucaoServico (Mecanico_idMecanico, OS_idOS, DataInicio, DataFim) VALUES
+(1, 1, '2024-12-01', '2024-12-05'),
+(2, 2, '2024-12-02', NULL);
+
+
+3. Queries Mais Complexas
+a) Recuperações Simples
+-- Listar todas as OS e seus valores totais
+SELECT idOS, ValorTotal, Status FROM OS;
+
+
+b) Filtros com WHERE
+-- Filtrar mecânicos com especialidade em "Freios"
+SELECT * FROM Mecanico WHERE Especialidade = 'Freios';
+
+
+c) Atributos Derivados
+-- Calcular o custo total de mão de obra e peças por OS
+SELECT 
+    OS.idOS, 
+    SUM(Servico.ValorMaoObra + Peca_has_OS.ValorTotal) AS CustoTotal
+FROM OS
+JOIN Servico_has_OS ON OS.idOS = Servico_has_OS.OS_idOS
+JOIN Servico ON Servico.idServico = Servico_has_OS.Servico_idServico
+JOIN Peca_has_OS ON OS.idOS = Peca_has_OS.OS_idOS
+GROUP BY OS.idOS;
+
+
+d) Ordenação
+-- Listar clientes ordenados pelo nome
+SELECT * FROM Cliente ORDER BY Nome;
+
+
+e) Filtros com HAVING
+-- Mostrar OS com custo total acima de R$ 500
+SELECT 
+    OS.idOS, 
+    SUM(Servico.ValorMaoObra + Peca_has_OS.ValorTotal) AS CustoTotal
+FROM OS
+JOIN Servico_has_OS ON OS.idOS = Servico_has_OS.OS_idOS
+JOIN Servico ON Servico.idServico = Servico_has_OS.Servico_idServico
+JOIN Peca_has_OS ON OS.idOS = Peca_has_OS.OS_idOS
+GROUP BY OS.idOS
+HAVING CustoTotal > 500;
+
+
+f) Junções Complexas
+-- Listar todos os serviços realizados, com informações do mecânico e veículo
+SELECT 
+    Servico.Descricao AS Servico, 
+    Mecanico.Nome AS Mecânico, 
+    Veiculo.Modelo AS Veiculo
+FROM ExecucaoServico
+JOIN Mecanico ON ExecucaoServico.Mecanico_idMecanico = Mecanico.idMecanico
+JOIN OS ON ExecucaoServico.OS_idOS = OS.idOS
+JOIN Veiculo ON OS.Veiculo_idVeiculo = Veiculo.idVeiculo
+JOIN Servico_has_OS ON OS.idOS = Servico_has_OS.OS_idOS
+JOIN Servico ON Servico_has_OS.Servico_idServico = Servico.idServico;
+
+
+4. Perguntas que Podem Ser Respondidas
+Qual o custo total de peças e mão de obra para cada OS?
+Quais serviços ainda estão pendentes?
+Quantos veículos pertencem a cada cliente?
+Quais mecânicos pertencem a cada equipe?
+Qual o custo médio dos serviços realizados?
